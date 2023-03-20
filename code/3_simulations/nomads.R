@@ -53,8 +53,15 @@ colnames(h1_perc) <- c("yr","month","perc")
 colnames(h2_perc) <- c("yr","month","perc")
 detection_range <- 450
 
+## set up df for keeping track of all agents' latitudes at each daily step of the simulation
+lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,3))
+colnames(lats.df) <- c("latitude","month","yr")
+
 ##### LOOP THROUGH YEARS #####
 for (y in 1:n.years) {
+  ## placeholder to keep track of place for storing all agent latitudes over all time steps
+  jj1 <- ((y-1)*n.ind*n.days)+1
+  jj2 <- jj1-1+(n.days*n.ind)
   
   ## initialize behavioral state and agent position data frames for the given year
   state.df <- data.frame(matrix(0,n.ind*n.days,4))
@@ -363,73 +370,56 @@ for (y in 1:n.years) {
         agent.df$dist_h2[k] <- sqrt((h2_lat - agent.df$latitude[k])^2 + (h2_lon - agent.df$longitude[k])^2)
       }
     }
-    
-    # If final day of year and final individual:
-    # (1) calculate % of days w/ clicks present at each hydrophone for each month of year
-    # (2) store each agent's information from day 365 for calculating day 1 info next year
-    # (3) clear agent.df and state.df dataframes (but keep for vis if final year of model run)
-    if (d == n.days & i == n.ind) {
-      print(paste('calculating monthly % presence for year',y))
-      for (m in 1:12) {
-        # index placeholder
-        kk <- (y-1)*12 + m
-        # filter to current month
-        dm <- agent.df %>% filter(month == m & yr == y)
-        # daily presence vs. absence dfs for each hydrophone in present month
-        h1_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
-        colnames(h1_pres) <- "yn"
-        h2_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
-        colnames(h2_pres) <- "yn"
-        for (dd in min(dm$step):max(dm$step)) {
-          dm_day <- dm %>% filter(step == dd)
-          if (any(dm_day$dist_h1 < detection_range)) {
-            h1_pres$yn[dd-min(dm$step)+1] <- 1
-          } else {
-            h1_pres$yn[dd-min(dm$step)+1] <- 0
-          }
-          if (any(dm_day$dist_h2 < detection_range)) {
-            h2_pres$yn[dd-min(dm$step)+1] <- 1
-          } else {
-            h2_pres$yn[dd-min(dm$step)+1] <- 0
-          }
+  }
+  # If final day of year and final individual:
+  # (1) calculate % of days w/ clicks present at each hydrophone for each month of year
+  # (2) store each agent's information from day 365 for calculating day 1 info next year
+  # (3) clear agent.df and state.df dataframes (but keep for vis if final year of model run)
+  if (d == n.days & i == n.ind) {
+    print(paste('calculating monthly % presence for year',y))
+    for (m in 1:12) {
+      # index placeholder
+      kk <- (y-1)*12 + m
+      # filter to current month
+      dm <- agent.df %>% filter(month == m & yr == y)
+      # daily presence vs. absence dfs for each hydrophone in present month
+      h1_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
+      colnames(h1_pres) <- "yn"
+      h2_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
+      colnames(h2_pres) <- "yn"
+      for (dd in min(dm$step):max(dm$step)) {
+        dm_day <- dm %>% filter(step == dd)
+        if (any(dm_day$dist_h1 < detection_range)) {
+          h1_pres$yn[dd-min(dm$step)+1] <- 1
+        } else {
+          h1_pres$yn[dd-min(dm$step)+1] <- 0
         }
-        # hydrophone 1 monthly values
-        h1_perc$yr[kk] <- y
-        h1_perc$month[kk] <- m
-        h1_perc$perc[kk] <- (sum(h1_pres$yn)/length(h1_pres$yn))*100
-        # hydrophone 2 monthly values
-        h2_perc$yr[kk] <- y
-        h2_perc$month[kk] <- m
-        h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
+        if (any(dm_day$dist_h2 < detection_range)) {
+          h2_pres$yn[dd-min(dm$step)+1] <- 1
+        } else {
+          h2_pres$yn[dd-min(dm$step)+1] <- 0
+        }
       }
-      
-      ## quick plot check
-      # print(ggplot(agent.df, aes(x=longitude, y = latitude)) + 
-      #   geom_path() +
-      #   annotate(geom = "text", x = agent.df$longitude[1], y = agent.df$latitude[1], label = "*", size = 8) +
-      #   annotate(geom = "text", x = agent.df$longitude[182], y = agent.df$latitude[182], label = "^", size = 8) +
-      #   annotate(geom = "text", x = agent.df$longitude[365], y = agent.df$latitude[365], label = "+", size = 8) +
-      #   annotate("polygon",
-      #            x=h1_lon + detection_range*cos(seq(0,2*pi,length.out=100)),
-      #            y=h1_lat + detection_range*sin(seq(0,2*pi,length.out=100)),
-      #            color = "red", fill = "red", alpha=0.4) +
-      #   annotate("polygon",
-      #            x=h2_lon + detection_range*cos(seq(0,2*pi,length.out=100)),
-      #            y=h2_lat + detection_range*sin(seq(0,2*pi,length.out=100)),
-      #            color = "blue", fill = "blue", alpha=0.4) +
-      #   xlim(c(-20000,20000)) +
-      #   ylim(c(-5000,35000)) +
-      #   ggtitle(paste('Year',y))
-      #   )
-      #  print(ggplot(agent.df, aes(x=step,y=heading)) + geom_point() +
-      #          ggtitle(paste('Year',y)))   
-      
-      ## store last year info and clear some variables 
-      if (y < n.years) {
-        state.lastyear <- state.df %>% filter(step == n.days)
-        agent.lastyear <- agent.df %>% filter(step == n.days)
-        rm(state.df, agent.df, h1_pres, h2_pres)
-      }
+      # hydrophone 1 monthly values
+      h1_perc$yr[kk] <- y
+      h1_perc$month[kk] <- m
+      h1_perc$perc[kk] <- (sum(h1_pres$yn)/length(h1_pres$yn))*100
+      # hydrophone 2 monthly values
+      h2_perc$yr[kk] <- y
+      h2_perc$month[kk] <- m
+      h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
+    }
+    
+    ## store latitudes of all agents at each timestep
+    lats.df$latitude[jj1:jj2] <- agent.df$latitude
+    lats.df$month[jj1:jj2] <- agent.df$month
+    lats.df$yr[jj1:jj2] <- agent.df$yr
+    
+    ## store last year info and clear some variables 
+    if (y < n.years) {
+      state.lastyear <- state.df %>% filter(step == n.days)
+      agent.lastyear <- agent.df %>% filter(step == n.days)
+      rm(state.df, agent.df, h1_pres, h2_pres)
     }
   }
 }
@@ -489,7 +479,10 @@ ggplot(agent.df, aes(x=step, y = longitude)) + geom_point()
 #ggplot(agent.df, aes(x=step, y=heading)) + geom_point()
 
 ##### save files for later formal visualization
-setwd("/Users/woestreich/Dropbox/Documents/MBARI_postdoc/cachalot_sims/")
-write.csv(agent.df, file = "outputs/files/nomads_agentdf.csv",row.names = FALSE)
-write.csv(h1_perc, file = "outputs/files/nomads_h1perc.csv",row.names = FALSE)
-write.csv(h2_perc, file = "outputs/files/nomads_h2perc.csv",row.names = FALSE)
+write.csv(agent.df, file = "outputs/files/simulation_outputs/nomads_agentdf.csv",row.names = FALSE)
+write.csv(h1_perc, file = "outputs/files/simulation_outputs/nomads_h1perc.csv",row.names = FALSE)
+write.csv(h2_perc, file = "outputs/files/simulation_outputs/nomads_h2perc.csv",row.names = FALSE)
+write.csv(lats.df, file = "outputs/files/simulation_outputs/nomads_lats.csv",row.names = FALSE)
+
+
+

@@ -30,12 +30,14 @@ rm(list=ls())
 ## manual audit files
 man_2016 <- read.csv("data/manual_validation/2016_test/manual_audit_daily.csv")
 man_2020 <- read.csv("data/manual_validation/2020_test/manual_audit_daily.csv")
-audit <- rbind(man_2016,man_2020)
-audit$month <- seq(1,24)
+man_2022 <- read.csv("data/manual_validation/2022_sighting/manual_audit_daily.csv")
+audit <- rbind(man_2016,man_2020,man_2022)
+audit$month <- seq(1,26)
 ## BLED test files
 f2016 <- list.files(path="data/manual_validation/2016_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
 f2020 <- list.files(path="data/manual_validation/2020_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
-files <- c(f2016,f2020)
+f2022 <- list.files(path="data/manual_validation/2022_sighting/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
+files <- c(f2016,f2020,f2022)
 
 # performance dataframe
 perf <- data.frame(matrix(NA, nrow = 8, ncol = 7))

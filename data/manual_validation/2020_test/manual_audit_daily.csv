@@ -1,13 +1,13 @@
-﻿month,date,yn_audit,yn_auto,notes
-1,16-Jan-20,1,,
-2,4-Feb-20,1,,
-3,28-Mar-20,1,,
-4,15-Apr-20,1,,Definitely a sperm whale at 16:54:10. Would be detected by the automated workflow if r = 5 instead of r = 6.
-5,14-May-20,1,,
-6,24-Jun-20,1,,
-7,2-Jul-20,0,,"Maybe a sperm whale in the first hour. Hard to be certain though, slow-ish clicks. There are other lower-freq, irregular click sounds throughout this day though. Also some of the short ICI higher-freq clicks. All of this makes me think that we are not actually hearing sperm whale clicks on this day. What is the sound at 8:51:30??? Very strange clusters of knocks."
-8,1-Aug-20,1,,"Slow clicks (8:54:45)? There are lots of clear clicks in this file, but spaced ~2 seconds apart. Need to dig in deeper here. Could these be sperm whale search clicks?"
-9,17-Sep-20,0,,Maybe at 15:19:20? Pretty high freq only and close together though. Especially suspect given the enormous number of low ICI high freq clicks on this day. Very similar signal is clear at 20:53:50 and is almost certainly other odontocetes.
-10,5-Oct-20,0,,
-11,20-Nov-20,1,,
-12,13-Dec-20,1,,
+﻿month,date,yn_audit,notes
+1,16-Jan-20,1,
+2,4-Feb-20,1,
+3,28-Mar-20,1,
+4,15-Apr-20,1,Definitely a sperm whale at 16:54:10. Would be detected by the automated workflow if r = 5 instead of r = 6.
+5,14-May-20,1,
+6,24-Jun-20,1,
+7,2-Jul-20,0,
+8,1-Aug-20,1,
+9,17-Sep-20,0,
+10,5-Oct-20,0,
+11,20-Nov-20,1,
+12,13-Dec-20,1,

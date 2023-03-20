@@ -26,8 +26,9 @@ lat_max_s <- 10000
 lat_min_n <- 20000
 lat_max_n <- 30000
 
-## for nomads, there is no n-s tracking behavior with longer step lengths, so 
-## latitudinal and longitudinal mvmt magnitudes are scaled by the bounding domain 
+## for nomadic individuals or resident foragers, there is no n-s tracking 
+## behavior with longer step lengths, so latitudinal and longitudinal mvmt 
+## magnitudes are scaled by the bounding domain 
 xy_adjust <- (lat_max_s - lat_min_s)/(lon_max-lon_min) 
 
 ## probability of search vs. forage switch during nomadic periods
@@ -40,9 +41,16 @@ colnames(h1_perc) <- c("yr","month","perc")
 colnames(h2_perc) <- c("yr","month","perc")
 detection_range <- 450
 
+## set up df for keeping track of all agents' latitudes at each daily step of the simulation
+lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,3))
+colnames(lats.df) <- c("latitude","month","yr")
+
 
 ##### LOOP THROUGH YEARS #####
 for (y in 1:n.years) {
+  ## placeholder to keep track of place for storing all agent latitudes over all time steps
+  jj1 <- ((y-1)*n.ind*n.days)+1
+  jj2 <- jj1-1+(n.days*n.ind)
   
   ## initialize behavioral state and agent position data frames for the given year
   state.df <- data.frame(matrix(0,n.ind*n.days,3))
@@ -60,8 +68,8 @@ for (y in 1:n.years) {
     rand2 <- rand1 + rnorm(1,61,5)
     rand3 <- rand2 + rnorm(1,122,5)
     # migration step lengths
-    migr_step_n <- (h2_lat-h1_lat)/(rand2-rand1)
-    migr_step_s <- (h2_lat-h1_lat)/(365-rand3)
+    migr_step_n <- (22000)/(rand2-rand1)
+    migr_step_s <- (22000)/(rand2-rand1)
     for (d in 1:n.days) {
       ## index placeholder 
       k <- (i-1)*n.days + d
@@ -164,7 +172,7 @@ for (y in 1:n.years) {
             agent.df$longitude[k] <- old.agent$longitude[1] - x_change
           }
         }
-          else if (state.df$state[k] == 'Search') {
+          else if (curr.state == 'Search') {
             step <- runif(1,0,300)
             #pick random direction for re-initiating search
             agent.df$heading[k] <- runif(1,0.0001,360)
@@ -520,17 +528,6 @@ for (y in 1:n.years) {
             } else {
               angle <- (agent.df$heading[k] - 270)
             }
-            # Determine the angle to perform trig
-            angle <- 0 
-            if (agent.df$heading[k] > 0 && agent.df$heading[k] <= 90) {
-              angle <- (90 - agent.df$heading[k])
-            } else if (agent.df$heading[k] > 90 && agent.df$heading[k] <= 180) {
-              angle <- (agent.df$heading[k] - 90)
-            } else if (agent.df$heading[k] > 180 && agent.df$heading[k] <= 270) {
-              angle <- (270 - agent.df$heading[k])
-            } else {
-              angle <- (agent.df$heading[k] - 270)
-            }
             # Use sine to determine the movement in y (latitude)
             rad_y <- angle*0.0174532925
             y_change <- sin(rad_y)*step*xy_adjust
@@ -577,14 +574,54 @@ for (y in 1:n.years) {
         if (state.df$state[k] == "migrate_n") {
           ## this is a migration case, so no need to make searching vs. foraging decision
           ## position and heading
-          y_change <- migr_step_n
-          agent.df$heading[k] <- 180
+          #y_change <- migr_step_n
+          agent.df$heading[k] <- rnorm(1,0,5)
+          if (agent.df$heading[k] < 0) {
+            agent.df$heading[k] <- 360 + agent.df$heading[k]
+          }
+          # Determine the angle to perform trig
+          angle <- 0 
+          if (agent.df$heading[k] > 0 &&  agent.df$heading[k] <= 90) {
+            angle <- (90 -  agent.df$heading[k])
+          } else if (agent.df$heading[k] > 90 && agent.df$heading[k] <= 180) {
+            angle <- (agent.df$heading[k] - 90)
+          } else if (agent.df$heading[k] > 180 && agent.df$heading[k] <= 270) {
+            angle <- (270 - agent.df$heading[k])
+          } else {
+            angle <- (agent.df$heading[k] - 270)
+          }
+          # Use sine to determine the movement in y (latitude)
+          rad_y <- angle*0.0174532925
+          y_change <- sin(rad_y)*migr_step_n
+          # Use cosine to determine the movement in x (longitude)
+          rad_x <- angle*0.0174532925
+          x_change <- cos(rad_x)*migr_step_n
+          agent.df$x_change[k] <- x_change
           # new positions
-          agent.df$longitude[k] <- agent.df$longitude[k-1]
-          agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change  #moving north, so plus
+          if (agent.df$heading[k] > 0 & agent.df$heading[k] <= 180) {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] + x_change
+          } else {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] - x_change
+          }
+          if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] >= 0 && agent.df$heading[k] <= 90) {
+            agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change
+          } else {
+            agent.df$latitude[k] <- agent.df$latitude[k-1] - y_change
+          }
+          
+          # new positions
+          # agent.df$longitude[k] <- agent.df$longitude[k-1]
+          # agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change  #moving north, so plus
+          
           ## keep position within arena
           if (agent.df$latitude[k] > lat_max_n) {
             agent.df$latitude[k] <- lat_max_n
+          } 
+          if (agent.df$longitude[k] > lon_max) {
+            agent.df$longitude[k] <- lon_max
+          } 
+          else if (agent.df$longitude[k] < lon_min) {
+            agent.df$longitude[k] <- lon_min
           } 
           ## distances from hydrophones
           agent.df$dist_h1[k] <- sqrt((h1_lat - agent.df$latitude[k])^2 + (h1_lon - agent.df$longitude[k])^2)
@@ -596,67 +633,106 @@ for (y in 1:n.years) {
         if (state.df$state[k] == "migrate_s") {
           ## this is a migration case, so no need to make searching vs. foraging decision
           ## position and heading
-          y_change <- migr_step_s
-          agent.df$heading[k] <- -180
+          #y_change <- migr_step_s
+          agent.df$heading[k] <- rnorm(1,180,5)
+          
           # new positions
-          agent.df$longitude[k] <- agent.df$longitude[k-1]
-          agent.df$latitude[k] <- agent.df$latitude[k-1] - y_change  #moving south, so minus
+          #agent.df$longitude[k] <- agent.df$longitude[k-1]
+          #agent.df$latitude[k] <- agent.df$latitude[k-1] - y_change  #moving south, so minus
+          # Determine the angle to perform trig
+          angle <- 0 
+          if (agent.df$heading[k] > 0 &&  agent.df$heading[k] <= 90) {
+            angle <- (90 -  agent.df$heading[k])
+          } else if (agent.df$heading[k] > 90 && agent.df$heading[k] <= 180) {
+            angle <- (agent.df$heading[k] - 90)
+          } else if (agent.df$heading[k] > 180 && agent.df$heading[k] <= 270) {
+            angle <- (270 - agent.df$heading[k])
+          } else {
+            angle <- (agent.df$heading[k] - 270)
+          }
+          # Use sine to determine the movement in y (latitude)
+          rad_y <- angle*0.0174532925
+          y_change <- sin(rad_y)*migr_step_s
+          # Use cosine to determine the movement in x (longitude)
+          rad_x <- angle*0.0174532925
+          x_change <- cos(rad_x)*migr_step_s
+          agent.df$x_change[k] <- x_change
+          # new positions
+          if (agent.df$heading[k] > 0 & agent.df$heading[k] <= 180) {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] + x_change
+          } else {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] - x_change
+          }
+          if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] >= 0 && agent.df$heading[k] <= 90) {
+            agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change
+          } else {
+            agent.df$latitude[k] <- agent.df$latitude[k-1] - y_change
+          }
           ## keep position within arena
           if (agent.df$latitude[k] < lat_min_s) {
             agent.df$latitude[k] <- lat_min_s
+          } 
+          if (agent.df$longitude[k] > lon_max) {
+            agent.df$longitude[k] <- lon_max
+          } 
+          else if (agent.df$longitude[k] < lon_min) {
+            agent.df$longitude[k] <- lon_min
           } 
           ## distances from hydrophones
           agent.df$dist_h1[k] <- sqrt((h1_lat - agent.df$latitude[k])^2 + (h1_lon - agent.df$longitude[k])^2)
           agent.df$dist_h2[k] <- sqrt((h2_lat - agent.df$latitude[k])^2 + (h2_lon - agent.df$longitude[k])^2)
         }
       }
-      
+    }
+  }
+  # If final day of year and final individual:
+  # (1) calculate % of days w/ clicks present at each hydrophone for each month of year
+  # (2) store each agent's information from day 365 for calculating day 1 info next year
+  # (3) clear agent.df and state.df dataframes (but keep for vis if final year of model run)
+  if (d == n.days & i == n.ind) {
+    print(paste('calculating monthly % presence for year',y))
+    for (m in 1:12) {
+      # index placeholder
+      kk <- (y-1)*12 + m
+      # filter to current month
+      dm <- agent.df %>% filter(month == m & yr == y)
+      # daily presence vs. absence dfs for each hydrophone in present month
+      h1_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
+      colnames(h1_pres) <- "yn"
+      h2_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
+      colnames(h2_pres) <- "yn"
+      for (dd in min(dm$step):max(dm$step)) {
+        dm_day <- dm %>% filter(step == dd)
+        if (any(dm_day$dist_h1 < detection_range)) {
+          h1_pres$yn[dd-min(dm$step)+1] <- 1
+        } else {
+          h1_pres$yn[dd-min(dm$step)+1] <- 0
+        }
+        if (any(dm_day$dist_h2 < detection_range)) {
+          h2_pres$yn[dd-min(dm$step)+1] <- 1
+        } else {
+          h2_pres$yn[dd-min(dm$step)+1] <- 0
+        }
+      }
+      # hydrophone 1 monthly values
+      h1_perc$yr[kk] <- y
+      h1_perc$month[kk] <- m
+      h1_perc$perc[kk] <- (sum(h1_pres$yn)/length(h1_pres$yn))*100
+      # hydrophone 2 monthly values
+      h2_perc$yr[kk] <- y
+      h2_perc$month[kk] <- m
+      h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
     }
     
-    # If final day of year and final individual:
-    # (1) calculate % of days w/ clicks present at each hydrophone for each month of year
-    # (2) store each agent's information from day 365 for calculating day 1 info next year
-    # (3) clear agent.df and state.df dataframes (but keep for vis if final year of model run)
-    if (d == n.days & i == n.ind) {
-      print(paste('calculating monthly % presence for year',y))
-      for (m in 1:12) {
-        # index placeholder
-        kk <- (y-1)*12 + m
-        # filter to current month
-        dm <- agent.df %>% filter(month == m & yr == y)
-        # daily presence vs. absence dfs for each hydrophone in present month
-        h1_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
-        colnames(h1_pres) <- "yn"
-        h2_pres <- data.frame(matrix(0,length(dm$step)/n.ind,1))
-        colnames(h2_pres) <- "yn"
-        for (dd in min(dm$step):max(dm$step)) {
-          dm_day <- dm %>% filter(step == dd)
-          if (any(dm_day$dist_h1 < detection_range)) {
-            h1_pres$yn[dd-min(dm$step)+1] <- 1
-          } else {
-            h1_pres$yn[dd-min(dm$step)+1] <- 0
-          }
-          if (any(dm_day$dist_h2 < detection_range)) {
-            h2_pres$yn[dd-min(dm$step)+1] <- 1
-          } else {
-            h2_pres$yn[dd-min(dm$step)+1] <- 0
-          }
-        }
-        # hydrophone 1 monthly values
-        h1_perc$yr[kk] <- y
-        h1_perc$month[kk] <- m
-        h1_perc$perc[kk] <- (sum(h1_pres$yn)/length(h1_pres$yn))*100
-        # hydrophone 2 monthly values
-        h2_perc$yr[kk] <- y
-        h2_perc$month[kk] <- m
-        h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
-      }
-      
-      ## store last year info and clear some variables 
-      if (y < n.years) {
-        agent.lastyear <- agent.df %>% filter(step == n.days)
-        rm(state.df, agent.df, h1_pres, h2_pres)
-      }
+    ## store latitudes of all agents at each timestep
+    lats.df$latitude[jj1:jj2] <- agent.df$latitude
+    lats.df$month[jj1:jj2] <- agent.df$month
+    lats.df$yr[jj1:jj2] <- agent.df$yr
+    
+    ## store last year info and clear some variables 
+    if (y < n.years) {
+      agent.lastyear <- agent.df %>% filter(step == n.days)
+      rm(state.df, agent.df, h1_pres, h2_pres)
     }
   }
 }
@@ -703,9 +779,9 @@ ggplot(agent.df, aes(x=step, y = latitude)) + geom_point(color = "black") +
 ggplot(agent.df, aes(x=step, y = longitude)) + geom_point()
 
 ##### save files for later formal visualization
-setwd("/Users/woestreich/Dropbox/Documents/MBARI_postdoc/cachalot_sims/")
-write.csv(agent.df, file = "outputs/files/migrants_agentdf.csv",row.names = FALSE)
-write.csv(h1_perc, file = "outputs/files/migrants_h1perc.csv",row.names = FALSE)
-write.csv(h2_perc, file = "outputs/files/migrants_h2perc.csv",row.names = FALSE)
+write.csv(agent.df, file = "outputs/files/simulation_outputs/migrants_agentdf.csv",row.names = FALSE)
+write.csv(h1_perc, file = "outputs/files/simulation_outputs/migrants_h1perc.csv",row.names = FALSE)
+write.csv(h2_perc, file = "outputs/files/simulation_outputs/migrants_h2perc.csv",row.names = FALSE)
+write.csv(lats.df, file = "outputs/files/simulation_outputs/migrants_lats.csv",row.names = FALSE)
 
 
