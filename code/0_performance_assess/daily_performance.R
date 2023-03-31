@@ -10,10 +10,11 @@
 ## constrains the search by only considering inter-click-intervals typical of 
 ## cachalot clicks (~0.5-2 seconds).
 ##
-## In this script, manual audit results for 24 randomly-selected days (1 from 
-## each month of 2016 and 2020) are compared to automated results. Manual audits 
-## were conducted by WKO in Raven Pro v1.6.3 w/ brightness 30, contrast 65, FFT 
-## window size 256 (95% overlap), and listening at max volume in Raven.
+## In this script, manual audit results for 26 days (24 randomly-selected [1 from 
+## each month of 2016 and 2020]; 2 from known dates of sperm whale presence in 
+## Nov-Dec 2022) are compared to automated results. Manual audits were conducted 
+## by WKO in Raven Pro v1.6.3 w/ brightness 30, contrast 65, FFT window size 256 
+## (95% overlap), and listening at max volume in Raven.
 ##
 ## This script generates false positive and false negative rates at daily 
 ## resolution. Different BLEDs and "r" values (number of detection repeats at 
@@ -124,14 +125,15 @@ for (r in 3:10) {
 ################################################################################
 library(patchwork)
 ##### Daily performance #####
-tiff("outputs/figures/performance.tiff",units="in", width=10,height=6,res=300)
+tiff("outputs/figures/performance.tiff",units="in", width=7,height=4,res=300)
 p1 <- ggplot(perf, aes(x=r, y=day_balanced_accuracy)) + geom_line() +
   labs(x = "Number of repetitions required (r)", y = "Balanced accuracy") +
   ylim(c(0,1)) +
-  ggtitle("Daily resolution, comparisons to manual audit")
+  theme(text = element_text(size = 12))
 p2 <- ggplot(perf, aes(x=r, y=day_fp_rate)) + geom_line() +
   labs(x = "Number of repetitions required (r)", y = "False positive rate") +
-  ylim(c(0,1))
+  ylim(c(0,1)) +
+  theme(text = element_text(size = 12))
 
 p1/p2
 dev.off()

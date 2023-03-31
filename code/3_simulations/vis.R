@@ -2,9 +2,8 @@
 
 ## packages
 library(tidyr)
-library(ggplot2)
-library(ggExtra)
 library(lubridate)
+library(patchwork)
 ## clear variables
 rm(list=ls())
 
@@ -85,12 +84,46 @@ tiff("outputs/figures/Fig3a.tiff",units="in", width=4.5,height=3,res=300)
 p1 + p12 + plot_layout(design = layout)
 dev.off()
 
-#################### Panel B cartoon empirical results #########################
-a <- as.data.frame(matrix(NA,12,2))
-colnames(a) <- c("x","y")
-a$x <- seq(1,12)
-a$y <- 50
-pa <- ggplot(a, aes(x,y)) + geom_point(color="white") +
+#################### Panel B cartoon empirical results (boxplot version) #######
+## approximate dummy data
+a <- as.data.frame(matrix(NA,60,2))
+colnames(a) <- c("month","perc")
+a$month <- c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5),rep(6,5),
+             rep(7,5),rep(8,5),rep(9,5),rep(10,5),rep(11,5),rep(12,5))
+a$perc <- c(5,10,15,22,38, 10,19,30,38,45, 11,23,32,38,55,
+            25,43,58,65,75, 38,52,65,70,85, 43,53,70,82,100, 
+            43,53,70,82,100, 38,52,65,70,85, 25,43,58,65,75,
+            11,23,32,38,55, 10,19,30,38,45, 5,10,15,22,38)
+b <- as.data.frame(matrix(NA,60,2))
+colnames(b) <- c("month","perc")
+b$month <- c(rep(7,5),rep(8,5),rep(9,5),rep(10,5),rep(11,5),rep(12,5),
+             rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5),rep(6,5))
+b$perc <- c(5,10,15,22,38, 10,19,30,38,45, 11,23,32,38,55,
+            25,43,58,65,75, 38,52,65,70,85, 43,53,70,82,100, 
+            43,53,70,82,100, 38,52,65,70,85, 25,43,58,65,75,
+            11,23,32,38,55, 10,19,30,38,45, 5,10,15,22,38)
+
+p3 <- ggplot(a, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7fb8") +
+  geom_vline(aes(xintercept=1.5), linetype="dotted") +
+  geom_vline(aes(xintercept=2.5), linetype="dotted") +
+  geom_vline(aes(xintercept=3.5), linetype="dotted") +
+  geom_vline(aes(xintercept=4.5), linetype="dotted") +
+  geom_vline(aes(xintercept=5.5), linetype="dotted") +
+  geom_vline(aes(xintercept=6.5), linetype="dotted") +
+  geom_vline(aes(xintercept=7.5), linetype="dotted") +
+  geom_vline(aes(xintercept=8.5), linetype="dotted") +
+  geom_vline(aes(xintercept=9.5), linetype="dotted") +
+  geom_vline(aes(xintercept=10.5), linetype="dotted") +
+  geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  xlab("") +
+  ylab("Percent of days with\nsperm whale present") +
+  ylim(c(0,100)) +
+  theme_bw() +
+  theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x = element_blank(),axis.ticks.x = element_blank(),
+        text = element_text(size = 14))
+
+p4 <- ggplot(b, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1dab4") +
   geom_vline(aes(xintercept=1.5), linetype="dotted") +
   geom_vline(aes(xintercept=2.5), linetype="dotted") +
   geom_vline(aes(xintercept=3.5), linetype="dotted") +
@@ -103,29 +136,44 @@ pa <- ggplot(a, aes(x,y)) + geom_point(color="white") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   geom_hline(aes(yintercept=0)) +
-  annotate("text", label = "Jan", x = 1, y = -8, size = 3) +
-  annotate("text", label = "Feb", x = 2, y = -8, size = 3) +
-  annotate("text", label = "Mar", x = 3, y = -8, size = 3) +
-  annotate("text", label = "Apr", x = 4, y = -8, size = 3) +
-  annotate("text", label = "May", x = 5, y = -8, size = 3) +
-  annotate("text", label = "Jun", x = 6, y = -8, size = 3) +
-  annotate("text", label = "Jul", x = 7, y = -8, size = 3) +
-  annotate("text", label = "Aug", x = 8, y = -8, size = 3) +
-  annotate("text", label = "Sep", x = 9, y = -8, size = 3) +
-  annotate("text", label = "Oct", x = 10, y = -8, size = 3) +
-  annotate("text", label = "Nov", x = 11, y = -8, size = 3) +
-  annotate("text", label = "Dec", x = 12, y = -8, size = 3) +
+  annotate("text", label = "Jan", x = 1, y = -8, size = 2.5) +
+  annotate("text", label = "Feb", x = 2, y = -8, size = 2.5) +
+  annotate("text", label = "Mar", x = 3, y = -8, size = 2.5) +
+  annotate("text", label = "Apr", x = 4, y = -8, size = 2.5) +
+  annotate("text", label = "May", x = 5, y = -8, size = 2.5) +
+  annotate("text", label = "Jun", x = 6, y = -8, size = 2.5) +
+  annotate("text", label = "Jul", x = 7, y = -8, size = 2.5) +
+  annotate("text", label = "Aug", x = 8, y = -8, size = 2.5) +
+  annotate("text", label = "Sep", x = 9, y = -8, size = 2.5) +
+  annotate("text", label = "Oct", x = 10, y = -8, size = 2.5) +
+  annotate("text", label = "Nov", x = 11, y = -8, size = 2.5) +
+  annotate("text", label = "Dec", x = 12, y = -8, size = 2.5) +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(-10,100)) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        axis.text.x = element_blank(),axis.ticks.x = element_blank(),
+        axis.ticks.x = element_blank(),axis.text.x = element_blank(),
         text = element_text(size = 14))
-tiff("outputs/figures/Fig3b.tiff",units="in", width=4.5,height=2.5,res=300)
-pa
-dev.off()
 
+p5 <- ggplot(data.frame(l = p3$labels$y, x = 1, y = 1)) +
+  geom_text(aes(x, y, label = l), angle = 90) + 
+  theme_void() +
+  coord_cartesian(clip = "off")
+p3$labels$y <- ""
+p4$labels$y <- ""
+p34 <- (p3 / plot_spacer() / p4) + plot_layout(heights = c(4, -1.2 ,4))
+p345 <- p5 + p34 + plot_layout(widths = c(1,20))
+
+layout <- "
+AABBBBBBBBBBBB
+AABBBBBBBBBBBB
+AABBBBBBBBBBBB
+"
+
+tiff("outputs/figures/Fig3b.tiff",units="in", width=3.7,height=2.5,res=300)
+p345 + plot_layout(design = layout)
+dev.off()
 
 #################### NOMADIC RESOURCE TRACKING #################################
 n_agentdf <- read.csv("outputs/files/simulation_outputs/nomads_agentdf.csv")
@@ -170,7 +218,7 @@ p3 <- ggplot(n_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
-  ylim(c(-10,100)) +
+  ylim(c(0,100)) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),axis.ticks.x = element_blank(),
@@ -271,7 +319,7 @@ p3 <- ggplot(t_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
-  ylim(c(-10,100)) +
+  ylim(c(0,100)) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),axis.ticks.x = element_blank(),
@@ -372,7 +420,7 @@ p3 <- ggplot(m_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
-  ylim(c(-10,100)) +
+  ylim(c(0,100)) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),axis.ticks.x = element_blank(),
@@ -472,7 +520,7 @@ p3 <- ggplot(p_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
-  ylim(c(-10,100)) +
+  ylim(c(0,100)) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),axis.ticks.x = element_blank(),
