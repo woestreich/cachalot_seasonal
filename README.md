@@ -4,7 +4,7 @@ Data and code for Oestreich et al. (in prep): "Acoustic evidence for seasonal re
 
 This project identifies and analyzes cachalot (sperm whale; Physeter macrocephalus) echolocation clicks found in 7+ years of near continuous recording from the Monterey Bay Aquarium Research Institute (MBARI) MARS hydrophone.
 
-Full hydrophone data archive: https://www.mbari.org/data/passive-acoustic-data/
+Full hydrophone data archive: https://www.mbari.org/data/passive-acoustic-data/  
 MBARI Ocean Soundscape Team: https://www.mbari.org/team/ocean-soundscape/
 
 The repository is organized as follows:
