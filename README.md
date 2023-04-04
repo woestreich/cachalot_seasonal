@@ -34,7 +34,7 @@ manual_validation: tables containing results of manual assessment of sperm whale
 recording_time.mat: matlab data file containing information on recording time and gaps
 
 
-<ins>A note on detections</ins>
+<ins>A note on detections</ins>  
 Detections were generated in Raven Pro v.1.6.3 (Cornell Lab of Ornithology), using a Band Limited Energy Detector (BLED) with the following parameters:
 
 BLED signal calculation:  
