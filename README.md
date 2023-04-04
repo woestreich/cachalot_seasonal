@@ -34,25 +34,26 @@ manual_validation: tables containing results of manual assessment of sperm whale
 recording_time.mat: matlab data file containing information on recording time and gaps
 
 
-BLED detections were generated in Raven Pro v.1.6.3 (Cornell Lab of Ornithology), using a Band Limited Energy Detector with the following parameters:
+<ins>A note on detections</ins>
+Detections were generated in Raven Pro v.1.6.3 (Cornell Lab of Ornithology), using a Band Limited Energy Detector (BLED) with the following parameters:
 
-BLED signal calculation:
-Min. Frequency = 1.4 kHz
-Max. Frequency = 4.0 kHz
-Min. Duration = 8.125 ms
-Max. Duration = 32.5 ms
-Min. Separation = 32.5 ms
+BLED signal calculation:  
+Min. Frequency = 1.4 kHz  
+Max. Frequency = 4.0 kHz  
+Min. Duration = 8.125 ms  
+Max. Duration = 32.5 ms  
+Min. Separation = 32.5 ms  
 
-BLED noise calculation:
-Block size = 2.0 s
-Hop size = 0.5 s
-Percentile = 20.0
+BLED noise calculation:  
+Block size = 2.0 s  
+Hop size = 0.5 s  
+Percentile = 20.0  
 
-Signal-to-noise parameters:
-Min. Occupancy = 70.0%
-SNR Threshold = 5.0 dB
+Signal-to-noise parameters:  
+Min. Occupancy = 70.0%  
+SNR Threshold = 5.0 dB  
 
-Spectrogram calculation:
-Window = Hann
-Window Size = 512 samples
-Window Overlap = 95%
+Spectrogram calculation:  
+Window = Hann  
+Window Size = 512 samples  
+Window Overlap = 95%  
