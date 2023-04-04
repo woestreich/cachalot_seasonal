@@ -9,7 +9,7 @@ MBARI Ocean Soundscape Team: https://www.mbari.org/team/ocean-soundscape/
 
 The repository is organized as follows:
 
-code:
+<ins>code</ins>
 
 0_performance_assess: daily-resolution assessment of automated presence/absence processing as compared to manually-identified sperm whale clicks.
 
