@@ -20,12 +20,12 @@ The repository is organized as follows:
 3_simulations: simulations and visualization of individual-level movement strategies underlying acoustic detection results
 
 
-outputs: 
+<ins>outputs</ins>
 
 Files and figures resulting from custom code described above.
 
 
-data: 
+<ins>data</ins>
 
 BLED: daily tables of potential cachalot click detections. These tables are then processed to identify true positive sperm whale click sequences using inter-click-intervals of a constant, repetitive nature (code/1_processing/presence.R). This methodology has been assessed for performance and optimized for key parameters (code/0_performance_assess). 
 
