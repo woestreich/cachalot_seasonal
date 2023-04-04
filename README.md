@@ -12,18 +12,25 @@ The repository is organized as follows:
 code:
 
 0_performance_assess: daily-resolution assessment of automated presence/absence processing as compared to manually-identified sperm whale clicks.
+
 1_processing: daily-resolution processing of sperm whale click presence/absence
+
 2_acoustics_analysis: statistics and visualization of daily-resolution presence/absence results
+
 3_simulations: simulations and visualization of individual-level movement strategies underlying acoustic detection results
+
 
 outputs: 
 
 Files and figures resulting from custom code described above.
 
+
 data: 
 
 BLED: daily tables of potential cachalot click detections. These tables are then processed to identify true positive sperm whale click sequences using inter-click-intervals of a constant, repetitive nature (code/1_processing/presence.R). This methodology has been assessed for performance and optimized for key parameters (code/0_performance_assess). 
+
 manual_validation: tables containing results of manual assessment of sperm whale echolocation click presence/absence
+
 recording_time.mat: matlab data file containing information on recording time and gaps
 
 
