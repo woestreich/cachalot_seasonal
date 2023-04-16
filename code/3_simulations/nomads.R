@@ -54,8 +54,8 @@ colnames(h2_perc) <- c("yr","month","perc")
 detection_range <- 450
 
 ## set up df for keeping track of all agents' latitudes at each daily step of the simulation
-lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,3))
-colnames(lats.df) <- c("latitude","month","yr")
+lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,4))
+colnames(lats.df) <- c("latitude","longitude","month","yr")
 
 ##### LOOP THROUGH YEARS #####
 for (y in 1:n.years) {
@@ -410,8 +410,9 @@ for (y in 1:n.years) {
       h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
     }
     
-    ## store latitudes of all agents at each timestep
+    ## store lat & lon of all agents at each timestep
     lats.df$latitude[jj1:jj2] <- agent.df$latitude
+    lats.df$longitude[jj1:jj2] <- agent.df$longitude
     lats.df$month[jj1:jj2] <- agent.df$month
     lats.df$yr[jj1:jj2] <- agent.df$yr
     

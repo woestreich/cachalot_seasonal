@@ -14,7 +14,7 @@ sdt <- "2023-01-01 00:00:00" # start time for timekeeping
 
 ## probabilities defining movement
 pr <- 0.1 # probability of behavioral state switching
-pr_n <- seq(0.8, 0.2, length.out = 12) # month-by-month probabilities of northward vs. southward resource pull
+pr_n <- seq(0.8, 0.2, length.out = 12)
 
 ## hydrophone locations
 h1_lat <- 5000
@@ -25,21 +25,21 @@ h2_lon <- 0
 ## initial condition bounds
 lon_min <- -200
 lon_max <- 200
-pr2a <- 0.1
-pr2b <- 0.3
+pr2a <- 0.2
+pr2b <- 0.5
 # south initial conditions
-lat_min_s <- 3000
-lat_max_s <- 12500
+lat_min_s <- 0
+lat_max_s <- 10000
 # mid initial conditions
-lat_min_m <- 12500
+lat_min_m <- 10000
 lat_max_m <- 20000
 # north initial conditions
 lat_min_n <- 20000
-lat_max_n <- 27500
+lat_max_n <- 30000
 
 ## arena boundaries
 long_bound_max <- 2000
-long_bound_min <- long_bound_max*(-1)
+long_bound_min <- -2000
 lat_bound_max <- 30000
 lat_bound_min <- 0
 
@@ -51,8 +51,8 @@ colnames(h2_perc) <- c("yr","month","perc")
 detection_range <- 450
 
 ## set up df for keeping track of all agents' latitudes at each daily step of the simulation
-lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,3))
-colnames(lats.df) <- c("latitude","month","yr")
+lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,4))
+colnames(lats.df) <- c("latitude","longitude","month","yr")
 
 ##### LOOP THROUGH YEARS #####
 for (y in 1:n.years) {
@@ -63,8 +63,8 @@ for (y in 1:n.years) {
   ## initialize behavioral state and agent position data frames for the given year
   state.df <- data.frame(matrix(0,n.ind*n.days,4))
   colnames(state.df) <- c("id","step","value","state")
-  agent.df <- data.frame(matrix(0,n.ind*n.days,10))
-  colnames(agent.df) <- c("yr","month","id","datetime","step","longitude","latitude","heading","dist_h1","dist_h2")
+  agent.df <- data.frame(matrix(0,n.ind*n.days,12))
+  colnames(agent.df) <- c("yr","month","id","datetime","step","longitude","latitude","heading","dist_h1","dist_h2","x_change","y_change")
   class(agent.df$datetime) <- 'POSIXct'
   
   ##### LOOP THROUGH INDIVIDUALS FOR EACH YEAR #####
@@ -113,6 +113,9 @@ for (y in 1:n.years) {
         ## distances from hydrophones
         agent.df$dist_h1[k] <- sqrt((h1_lat - agent.df$latitude[k])^2 + (h1_lon - agent.df$longitude[k])^2)
         agent.df$dist_h2[k] <- sqrt((h2_lat - agent.df$latitude[k])^2 + (h2_lon - agent.df$longitude[k])^2)
+        ## x_change and y_change
+        agent.df$x_change[k] <- 0
+        agent.df$y_change[k] <- 0
       } 
       
       ## if day 1 but year > 1:
@@ -166,6 +169,9 @@ for (y in 1:n.years) {
           # Use cosine to determine the movement in x (longitude)
           rad_x <- angle*0.0174532925
           x_change <- cos(rad_x)*step
+          ## x_change and y_change
+          agent.df$x_change[k] <- x_change
+          agent.df$y_change[k] <- y_change
           # Determine whether to add or subtract new value based on heading
           if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] > 0 && agent.df$heading[k] <= 90) {
             agent.df$latitude[k] <- old.agent$latitude[1] + y_change
@@ -179,7 +185,8 @@ for (y in 1:n.years) {
           }
         } 
         else if (state.df$state[k] == 'Search') {
-          step <- runif(1,0,700)
+          #step <- runif(1,0,700)
+          step <- runif(1,0,500)
           # Use N-S search heading probabilities for search behavioral state
           n_s <- runif(1,0,1)
           if (n_s < pr_n[agent.df$month[k]]) {
@@ -204,14 +211,22 @@ for (y in 1:n.years) {
           # Use sine to determine the movement in y (latitude)
           rad_y <- angle*0.0174532925
           y_change <- sin(rad_y)*step
-          # x_change is zero for n-s resource tracking behavior
-          x_change <- 0
+          # Use cosine to determine the movement in x (longitude)
+          rad_x <- angle*0.0174532925
+          x_change <- cos(rad_x)*step
+          ## x_change and y_change
+          agent.df$x_change[k] <- x_change
+          agent.df$y_change[k] <- y_change
           # new positions
-          agent.df$longitude[k] <- old.agent$longitude[1] + x_change
           if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] >= 0 && agent.df$heading[k] <= 90) {
             agent.df$latitude[k] <- old.agent$latitude[1] + y_change
           } else {
             agent.df$latitude[k] <- old.agent$latitude[1] - y_change
+          }
+          if (agent.df$heading[k] > 0 & agent.df$heading[k] <= 180) {
+            agent.df$longitude[k] <- agent.df$longitude[1] + x_change
+          } else {
+            agent.df$longitude[k] <- agent.df$longitude[1] - x_change
           }
         }
         ## keep position within arena
@@ -282,6 +297,9 @@ for (y in 1:n.years) {
           # Use cosine to determine the movement in x (longitude)
           rad_x <- angle*0.0174532925
           x_change <- cos(rad_x)*step
+          ## x_change and y_change
+          agent.df$x_change[k] <- x_change
+          agent.df$y_change[k] <- y_change
           # Determine whether to add or subtract new value based on heading
           if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] > 0 && agent.df$heading[k] <= 90) {
             agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change
@@ -295,7 +313,7 @@ for (y in 1:n.years) {
           }
         } 
         else if (state.df$state[k] == 'Search') {
-          step <- runif(1,0,700)
+          step <- runif(1,0,500)
           # Use N-S search heading probabilities for search behavioral state
           n_s <- runif(1,0,1)
           if (n_s < pr_n[agent.df$month[k]]) {
@@ -320,14 +338,22 @@ for (y in 1:n.years) {
           # Use sine to determine the movement in y (latitude)
           rad_y <- angle*0.0174532925
           y_change <- sin(rad_y)*step
-          # x_change is zero for n-s resource tracking behavior
-          x_change <- 0
+          # Use cosine to determine the movement in x (longitude)
+          rad_x <- angle*0.0174532925
+          x_change <- cos(rad_x)*step
+          ## x_change and y_change
+          agent.df$x_change[k] <- x_change
+          agent.df$y_change[k] <- y_change
           # new positions
-          agent.df$longitude[k] <- agent.df$longitude[k-1] + x_change
           if (agent.df$heading[k] > 270 && agent.df$heading[k] <= 360 || agent.df$heading[k] >= 0 && agent.df$heading[k] <= 90) {
             agent.df$latitude[k] <- agent.df$latitude[k-1] + y_change
           } else {
             agent.df$latitude[k] <- agent.df$latitude[k-1] - y_change
+          }
+          if (agent.df$heading[k] > 0 & agent.df$heading[k] <= 180) {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] + x_change
+          } else {
+            agent.df$longitude[k] <- agent.df$longitude[k-1] - x_change
           }
         }
         ## keep position within arena
@@ -388,8 +414,9 @@ for (y in 1:n.years) {
       h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
     }
     
-    ## store latitudes of all agents at each timestep
+    ## store lat & lon of all agents at each timestep
     lats.df$latitude[jj1:jj2] <- agent.df$latitude
+    lats.df$longitude[jj1:jj2] <- agent.df$longitude
     lats.df$month[jj1:jj2] <- agent.df$month
     lats.df$yr[jj1:jj2] <- agent.df$yr
     
@@ -447,12 +474,15 @@ ggplot(agent.df, aes(x=step, y = latitude)) + geom_point(color = "black") +
   geom_hline(yintercept = h1_lat, color = "red") +
   geom_hline(yintercept = h2_lat, color = "blue") 
 
-#ggplot(agent.df, aes(x=step, y = longitude)) + geom_point()
+ggplot(agent.df, aes(x=step, y = longitude)) + geom_point()
+ggplot(lats.df, aes(latitude)) + geom_histogram()
+ggplot(lats.df, aes(longitude)) + geom_histogram()
 
-rand_ind <- round(runif(1,1,50))
+rand_ind <- round(runif(1,1,n.ind))
 #rand_ind <- 1
 ind <- agent.df %>% filter(id == rand_ind) 
 ind_start <- ind %>% filter(step == 1)
+ind_mid <- ind %>% filter(step == 183)
 ind_end <- ind %>% filter(step == 365)
 ggplot(ind, aes(longitude,latitude,color=step)) + 
   annotate("polygon",
@@ -470,6 +500,7 @@ ggplot(ind, aes(longitude,latitude,color=step)) +
   geom_path()  +
   scale_color_gradient(low = '#bdbdbd', high = '#000000') +
   geom_point(data = ind_start, aes(longitude, latitude), shape = 21, color = 'black', fill = 'white', size = 4) +
+  geom_point(data = ind_mid, aes(longitude, latitude), shape = 21, color = 'black', fill = 'gray', size = 4) +
   geom_point(data = ind_end, aes(longitude, latitude), shape = 21, color = 'black', fill = 'black', size = 4) +
   xlim(c(-2500,2500)) +
   ylim(c(min(agent.df$latitude),max(agent.df$latitude))) +
@@ -486,3 +517,5 @@ write.csv(agent.df, file = "outputs/files/simulation_outputs/trackers_agentdf.cs
 write.csv(h1_perc, file = "outputs/files/simulation_outputs/trackers_h1perc.csv",row.names = FALSE)
 write.csv(h2_perc, file = "outputs/files/simulation_outputs/trackers_h2perc.csv",row.names = FALSE)
 write.csv(lats.df, file = "outputs/files/simulation_outputs/trackers_lats.csv",row.names = FALSE)
+
+

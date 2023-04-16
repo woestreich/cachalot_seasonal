@@ -24,6 +24,8 @@ h2_lon <- 0
 # ## south and north nomadic range boundaries
 lon_min <- -2000
 lon_max <- 2000
+lon_min_i <- -200 # initial conditions bounds
+lon_max_i <- 200
 lat_min_s <- 0
 lat_max_s <- 10000
 lat_min_n <- 20000
@@ -42,8 +44,8 @@ colnames(h2_perc) <- c("yr","month","perc")
 detection_range <- 450
 
 ## set up df for keeping track of all agents' latitudes at each daily step of the simulation
-lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,3))
-colnames(lats.df) <- c("latitude","month","yr")
+lats.df <- data.frame(matrix(0,n.ind*n.days*n.years,4))
+colnames(lats.df) <- c("latitude","longitude","month","yr")
 
 ##### LOOP THROUGH YEARS #####
 for (y in 1:n.years) {
@@ -114,7 +116,7 @@ for (y in 1:n.years) {
             curr.state <- 'Search'
           }
           ## position
-          agent.df$longitude[k] <- runif(1,lon_min,lon_max)
+          agent.df$longitude[k] <- runif(1,lon_min_i,lon_max_i)
           agent.df$latitude[k] <- runif(1,lat_min_s,lat_max_s)
           agent.df$x_change[k] <- 0
           ## heading
@@ -1021,8 +1023,9 @@ for (y in 1:n.years) {
       h2_perc$perc[kk] <- (sum(h2_pres$yn)/length(h2_pres$yn))*100
     }
     
-    ## store latitudes of all agents at each timestep
+    ## store lat & lon of all agents at each timestep
     lats.df$latitude[jj1:jj2] <- agent.df$latitude
+    lats.df$longitude[jj1:jj2] <- agent.df$longitude
     lats.df$month[jj1:jj2] <- agent.df$month
     lats.df$yr[jj1:jj2] <- agent.df$yr
     

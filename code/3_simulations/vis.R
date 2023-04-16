@@ -1,9 +1,11 @@
-## simulation figures, 2nd version
+## simulation figures
 
 ## packages
 library(tidyr)
 library(lubridate)
 library(patchwork)
+library(dplyr)
+library(ggplot2)
 ## clear variables
 rm(list=ls())
 
@@ -281,6 +283,43 @@ t_agentdf <- read.csv("outputs/files/simulation_outputs/trackers_agentdf.csv")
 t_h1perc <- read.csv("outputs/files/simulation_outputs/trackers_h1perc.csv")
 t_h2perc <- read.csv("outputs/files/simulation_outputs/trackers_h2perc.csv")
 t_lats <- read.csv("outputs/files/simulation_outputs/trackers_lats.csv")
+
+# track plot test
+rand_ind <- round(runif(1,1,50))
+#rand_ind <- 28
+ind <- t_agentdf %>% filter(id == rand_ind)
+ind_start <- ind %>% filter(step == 1)
+ind_end <- ind %>% filter(step == 365)
+ggplot(ind, aes(longitude,latitude,color=step)) + 
+  annotate("polygon",
+           x=h1_lon + detection_range*cos(seq(0,2*pi,length.out=100)),
+           y=h1_lat + detection_range*sin(seq(0,2*pi,length.out=100)),
+           color = "red", fill = "red", alpha=0.4) +
+  annotate("polygon",
+           x=h2_lon + detection_range*cos(seq(0,2*pi,length.out=100)),
+           y=h2_lat + detection_range*sin(seq(0,2*pi,length.out=100)),
+           color = "blue", fill = "blue", alpha=0.4)  +
+  annotate("text", x = -2450, y = 29500, label = 'F', size = 7, fontface = "bold") +
+  annotate("text", x = 2450, y = 29500, label = 'N', size = 7) +
+  geom_segment(aes(x = 2450, y = 22500, xend = 2450, yend = 28000),
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  geom_path()  +
+  scale_color_gradient(low = '#bdbdbd', high = '#000000') +
+  geom_point(data = ind_start, aes(longitude, latitude), shape = 21, color = 'black', fill = 'white', size = 4) +
+  geom_point(data = ind_end, aes(longitude, latitude), shape = 21, color = 'black', fill = 'black', size = 4) +
+  xlim(c(-2500,2500)) +
+  ylim(c(min(t_agentdf$latitude),max(t_agentdf$latitude))) +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  theme_bw() +
+  theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x = element_blank(),axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),axis.ticks.y = element_blank(),
+        text = element_text(size = 14))
+
+
+
+
 # remove 1st year to minimize impacts of initial conditions
 t_lats <- t_lats %>% filter(yr > 1)
 t_lats_winter <- t_lats %>% filter(month == 1 | month == 12 | month == 2)
