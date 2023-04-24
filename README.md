@@ -1,6 +1,6 @@
 # cachalot_seasonal
 
-Data and code for Oestreich et al. (in prep): "Acoustic evidence for seasonal resource-tracking migration by a top predator of the deep pelagic"
+Data and code for Oestreich et al.: "Acoustic evidence for seasonal resource-tracking migration by a top predator of the deep sea"
 
 This project identifies and analyzes cachalot (sperm whale; Physeter macrocephalus) echolocation clicks found in 7+ years of near continuous recording from the Monterey Bay Aquarium Research Institute (MBARI) MARS hydrophone.
 
@@ -15,7 +15,7 @@ The repository is organized as follows:
 
 1_processing: daily-resolution processing of sperm whale click presence/absence
 
-2_acoustics_analysis: statistics and visualization of daily-resolution presence/absence results
+2_acoustics_analysis: statistics and visualization of daily-resolution presence/absence results and seasonality in detection range
 
 3_simulations: simulations and visualization of individual-level movement strategies underlying acoustic detection results
 
@@ -31,7 +31,11 @@ BLED: daily tables of potential cachalot click detections. These tables are then
 
 manual_validation: tables containing results of manual assessment of sperm whale echolocation click presence/absence
 
+detection_range: data for ambient noise, acoustic propagation loss, and detection range estimation. Some detection range and propagation loss modeling files exceed the GitHub file size limit but are available upon request.
+
 recording_time.mat: matlab data file containing information on recording time and gaps
+
+goa_perc.csv: data file containing Gulf of Alaska monthly sperm whale presence metrics estimated graphically from Diogou et al. (2019) and Mellinger et al. (2004), both cited in the manuscript text
 
 
 <ins>A note on detections</ins>  
