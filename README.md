@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/612036389.svg)](https://zenodo.org/badge/latestdoi/612036389)
+
+
 # cachalot_seasonal
 
 Data and code for Oestreich et al.: "Acoustic evidence for seasonal resource-tracking migration by a top predator of the deep sea"
