@@ -42,8 +42,8 @@ maxsep <- 2.0
 files <- list.files(path="data/BLED", pattern="*.txt", full.names=TRUE, recursive=TRUE)
 
 ## prepare an daily presence/absence data frame, including daily y/n ("yn") and day, night columns
-presence <- data.frame(matrix(NA, nrow = length(files), ncol = 9))
-colnames(presence) <- c("date","yn","day","night","dd","rate","d_rate","n_rate","dd_rate")
+presence <- data.frame(matrix(NA, nrow = length(files), ncol = 10))
+colnames(presence) <- c("date","yn","day","night","dd","rate","d_rate","n_rate","dd_rate","female")
 presence$date <- as.Date(presence$date)
 
 ## night, dusk/dawn, and day recording time counts (in hours)
@@ -113,6 +113,15 @@ for (f in 1:length(files)) {
     else {
       presence$yn[f] <- 0
       presence$rate[f] <- 0
+    }
+    
+    #### is there a clear cachalot cadence with short ICI in this 24-hour day?
+    test_female <- bled1 %>% filter(diff >= minsep & diff <= 0.5 & seq == TRUE)
+    if (length(test_female$seq) >= 1) {
+      presence$female[f] <- 1
+    }
+    else {
+      presence$female[f] <- 0
     }
     
     #### is there a clear cachalot cadence in daytime hours? 
@@ -195,7 +204,7 @@ for (yr in 2015:2021) {
 
 
 ##### save presence/absence, click solar elevation, annual perc information to files
-write.csv(presence, file = "outputs/files/presence.csv")
+write.csv(presence, file = "outputs/files/acoustic_outputs/presence.csv")
 clicks$year <- year(clicks$time)
 clicks$month <- month(clicks$time)
 clicks_soldeg <- clicks %>% select(soldeg,year,month,time,diff)

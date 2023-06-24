@@ -162,6 +162,8 @@ p1 <- ggplot(goa, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7fb8") 
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = goa, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(0,100)) +
@@ -183,6 +185,8 @@ p2 <- ggplot(allmonths, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1d
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
   geom_hline(aes(yintercept=0)) +
+  geom_smooth(data = allmonths, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   annotate("text", label = "Jan", x = 1, y = -8, size = 2.5) +
   annotate("text", label = "Feb", x = 2, y = -8, size = 2.5) +
   annotate("text", label = "Mar", x = 3, y = -8, size = 2.5) +
@@ -235,6 +239,8 @@ p1 <- ggplot(t_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = goa, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(0,100)) +
@@ -267,6 +273,8 @@ p2 <- ggplot(t_h1perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1da
   annotate("text", label = "Oct", x = 10, y = -8, size = 2.5) +
   annotate("text", label = "Nov", x = 11, y = -8, size = 2.5) +
   annotate("text", label = "Dec", x = 12, y = -8, size = 2.5) +
+  geom_smooth(data = allmonths, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(-10,100)) +
@@ -307,6 +315,8 @@ p1 <- ggplot(n_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = goa, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(0,100)) +
@@ -326,6 +336,8 @@ p2 <- ggplot(n_h1perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1da
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = allmonths, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   geom_hline(aes(yintercept=0)) +
   annotate("text", label = "Jan", x = 1, y = -8, size = 2.5) +
   annotate("text", label = "Feb", x = 2, y = -8, size = 2.5) +
@@ -379,6 +391,8 @@ p1 <- ggplot(m_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = goa, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(0,100)) +
@@ -398,6 +412,8 @@ p2 <- ggplot(m_h1perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1da
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = allmonths, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   geom_hline(aes(yintercept=0)) +
   annotate("text", label = "Jan", x = 1, y = -8, size = 2.5) +
   annotate("text", label = "Feb", x = 2, y = -8, size = 2.5) +
@@ -451,6 +467,8 @@ p1 <- ggplot(p_h2perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#2c7f
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = goa, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   xlab("") +
   ylab("Percent of days with\nsperm whale present") +
   ylim(c(0,100)) +
@@ -470,6 +488,8 @@ p2 <- ggplot(p_h1perc, aes(as.factor(month), perc)) + geom_boxplot(fill = "#a1da
   geom_vline(aes(xintercept=9.5), linetype="dotted") +
   geom_vline(aes(xintercept=10.5), linetype="dotted") +
   geom_vline(aes(xintercept=11.5), linetype="dotted") +
+  geom_smooth(data = allmonths, aes(x=month, y=perc), method="lm", se=TRUE, fill=NA,
+              formula=y ~ poly(x, 4, raw=TRUE),colour="black",linetype = "dotted") +
   geom_hline(aes(yintercept=0)) +
   annotate("text", label = "Jan", x = 1, y = -8, size = 2.5) +
   annotate("text", label = "Feb", x = 2, y = -8, size = 2.5) +
