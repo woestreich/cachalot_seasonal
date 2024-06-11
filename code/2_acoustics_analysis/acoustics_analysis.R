@@ -5,11 +5,14 @@
 rm(list=ls())
 ## packages
 library(lubridate)
-library(tidyr)
 library(zoo)
 library(dplyr)
 library(mgcv)
 library(cetcolor)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+library(lmodel2)
 
 ## load data files
 presence <- read.csv("outputs/files/acoustic_outputs/presence.csv")
@@ -49,31 +52,6 @@ wsize = 3
 allmonths$date <- as.Date(paste(as.character(allmonths$year),as.character(allmonths$month),"15",sep = "-"))
 allmonths$perc_rm <- rollapply(allmonths$perc,wsize,mean,fill=NA,na.rm = TRUE)
 
-## month-to-month comparisons of % presence distribution
-pvs1 <- matrix(NA,12,1)
-s1 <- allmonths %>% filter(month == 1) # peak month
-for (m in 2:12) {
-  s2 <- allmonths %>% filter(month == m)
-  t <- t.test(s1$perc,s2$perc)
-  pvs1[m] <- t$p.value
-}
-stars1 <- as.data.frame(matrix(NA,4,2))
-colnames(stars1) <- c("y","x")
-stars1$y <- 5
-stars1$x <- which(pvs1 < 0.05)
-
-pvs2 <- matrix(NA,12,1)
-s7 <- allmonths %>% filter(month == 7) # trough month
-for (m in c(1:6,8:12)) {
-  s2 <- allmonths %>% filter(month == m)
-  t <- t.test(s7$perc,s2$perc)
-  pvs2[m] <- t$p.value
-}
-stars2 <- as.data.frame(matrix(NA,6,2))
-colnames(stars2) <- c("y","x")
-stars2$y <- 5
-stars2$x <- which(pvs2 < 0.05)
-
 ##### GAM
 allmonths$year <- as.factor(allmonths$year)
 gam1 <- gam(formula = perc ~ s(month, bs="cc", k=12) + s(year, bs="re"), data = allmonths, method = "REML")
@@ -106,7 +84,7 @@ pa <- ggplot(allmonths, aes(x=date,y=perc_rm)) + geom_line(color="#a1dab4",size=
   scale_x_continuous(limits = c(as.Date("2015-01-01"),as.Date("2022-12-31")), expand = c(0,0)) +
   ylim(c(0,100)) +
   xlab("") +
-  ylab("Percent of recording days with\nforaging sperm whale present") +
+  ylab("Recording days with foraging sperm whale detected (%)\n(Central CA Current System)") +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),axis.ticks.x = element_blank(), text = element_text(size = 14))
@@ -115,9 +93,7 @@ pb <- ggplot(allmonths, aes(x = as.factor(month), y = perc)) + geom_boxplot(fill
   stat_summary(geom = "point", fun = "mean", col = "black", size = 2, shape = 24, fill = "black") + 
   ylim(c(0,100)) +
   xlab("Month") +
-  ylab("Recording days with foraging\nsperm whale present (%)") +
-  geom_text(data = stars1, aes(x=x,y=y,label="*"),size=7) +
-  geom_text(data = stars2, aes(x=x,y=y,label="**"),size=7) +
+  ylab("Recording days with foraging sperm whale detected (%)\n(Central CA Current System)") +
   geom_vline(aes(xintercept=1.5), linetype="dotted") +
   geom_vline(aes(xintercept=2.5), linetype="dotted") +
   geom_vline(aes(xintercept=3.5), linetype="dotted") +
@@ -170,34 +146,27 @@ p3 + pab + plot_layout(design = layout)
 dev.off()
 
 ##### ICI stats figure #####
-pp <- ggplot(ici_stats, aes(x=ICI,y=pd_mean)) + 
-  geom_rect(aes(xmin = 0.425, ymin=0, xmax=0.6, ymax = 0.075), color = '#3182bd', fill = 'white') +
-  geom_rect(aes(xmin = 0.6, ymin=0, xmax=0.8, ymax = 0.075), color = '#9ecae1', fill = 'white') +
-  geom_rect(aes(xmin = 0.8, ymin=0, xmax=2.125, ymax = 0.075), color = '#deebf7', fill = 'white') +
-  geom_rect(aes(xmin = 0.425, ymin=0.075, xmax=0.6, ymax = 0.08), color = '#3182bd', fill = '#3182bd') +
-  geom_rect(aes(xmin = 0.6, ymin=0.075, xmax=0.8, ymax = 0.08), color = '#9ecae1', fill = '#9ecae1') +
-  geom_rect(aes(xmin = 0.8, ymin=0.075, xmax=2.125, ymax = 0.08), color = '#deebf7', fill = '#deebf7') +
-  geom_line(size = 1) +
-  geom_line(data = ici_stats, aes(x=ICI,y=pd_min), linetype = "dashed", size = 0.5) +
-  geom_line(data = ici_stats, aes(x=ICI,y=pd_max), linetype = "dashed", size = 0.5) +
+clicks$qt <- as.factor(quarter(clicks$time))
+pp <- ggplot(clicks, aes(x=ICI,color=qt)) + 
+  geom_rect(aes(xmin = 0.425, ymin=0, xmax=0.6, ymax = 3), color = '#3182bd', fill = 'white') +
+  geom_rect(aes(xmin = 0.6, ymin=0, xmax=0.8, ymax = 3), color = '#9ecae1', fill = 'white') +
+  geom_rect(aes(xmin = 0.8, ymin=0, xmax=2.125, ymax = 3), color = '#deebf7', fill = 'white') +
+  geom_rect(aes(xmin = 0.425, ymin=0.075, xmax=0.6, ymax = 3), color = '#3182bd', fill = '#3182bd') +
+  geom_rect(aes(xmin = 0.6, ymin=0.075, xmax=0.8, ymax = 3), color = '#9ecae1', fill = '#9ecae1') +
+  geom_rect(aes(xmin = 0.8, ymin=0.075, xmax=2.125, ymax = 3), color = '#deebf7', fill = '#deebf7') +
+  geom_density() +
   xlab("Inter-click-interval (s)") +
   ylab("Density") +
-  annotate("segment", x = 1.0, xend = 1.2, y = 0.062, yend = 0.062, linetype = "dashed", size =0.5) +
-  annotate("segment", x = 1.0, xend = 1.2, y = 0.07, yend = 0.07, size = 1) +
   geom_rect(aes(xmin = 1.0, ymin=0.054-0.0025, xmax=1.2, ymax = 0.054+0.0025), color = '#3182bd', fill = '#3182bd') +
   geom_rect(aes(xmin = 1.0, ymin=0.046-0.0025, xmax=1.2, ymax = 0.046+0.0025), color = '#9ecae1', fill = '#9ecae1') +
   geom_rect(aes(xmin = 1.0, ymin=0.038-0.0025, xmax=1.2, ymax = 0.038+0.0025), color = '#deebf7', fill = '#deebf7') +
-  annotate("text", x = 1.25, y = 0.07, label = "Mean monthly distribution", hjust = 0) +
-  annotate("text", x = 1.25, y = 0.062, label = "Min & max monthly distribution", hjust = 0) +
-  annotate("text", x = 1.25, y = 0.054, label = "Females & juveniles", hjust = 0) +
   annotate("text", x = 1.25, y = 0.046, label = "Mid-size (large females & juvenile males)", hjust = 0) +
   annotate("text", x = 1.25, y = 0.038, label = "Adult males", hjust = 0) +
   theme_bw() +
   theme(legend.position = "none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         text = element_text(size = 14)) 
-pp
 
-tiff("outputs/figures/Fig3_ICI.tiff",units="in", width=7,height=3,res=300)
+tiff("outputs/figures/Fig3_ICI_new.tiff",units="in", width=7,height=3,res=300)
 pp
 dev.off()
 
@@ -247,105 +216,63 @@ dev.off()
 
 ##### NPTZ (Figure 6) #####
 ## 160 - 180
-nptz_sst <- read.csv("data/NPTZ_monthly_sst.csv")
+nptz_sst <- read.csv("data/NPTZ_monthly_new.csv")
+nptz_sst_goa <-read.csv("data/NPTZ_monthly_goa_new.csv")
 
 # MONTHLY
+#ca current
 colnames(nptz_sst) <- c("year","month","nptz_lat_sst")
 nptz_sst$year <- as.factor(nptz_sst$year)
+allmonths$year <- as.factor(allmonths$year)
 mmm <- allmonths %>% full_join(nptz_sst, by = c("year","month"))
 lm_sst <- lm(mmm$perc~mmm$nptz_lat_sst)
-
-# QUARTERLY
-mq <- data.frame(matrix(NA, nrow = 29, ncol = 4))
-colnames(mq) <- c("year","qt","perc","nptz")
-mq$year <- c(2015,rep(2016,4),rep(2017,4),rep(2018,4),rep(2019,4),rep(2020,4),rep(2021,4),rep(2022,4))
-mq$qt <- c(4,rep(c(1,2,3,4),7))
-for (i in 1:length(mq$year)) {
-  x <- allmonths %>% filter(year == mq$year[i] & month < (mq$qt[i]*3)+1 & month > (mq$qt[i]*3)-3)
-  y <- nptz_sst %>% filter(year == mq$year[i] & month < (mq$qt[i]*3)+1 & month > (mq$qt[i]*3)-3)
-  mq$perc[i] <- mean(x$perc)
-  mq$nptz[i] <- mean(y$nptz_lat_sst)
-}
-lm_sst_qt <- lm(mq$perc ~ mq$nptz)
+lm2_sst <- lmodel2(perc~nptz_lat_sst,data=mmm,"relative","relative",100)
+#goa
+colnames(nptz_sst_goa) <- c("year","month","nptz_lat_sst")
+nptz_sst_goa$year <- as.factor(nptz_sst_goa$year)
+allmonths_goa <- read.csv("data/goa_perc.csv")
+allmonths_goa$year <- as.factor(allmonths_goa$year)
+mmm_goa <- allmonths_goa %>% full_join(nptz_sst_goa, by = c("year","month"))
+lm_sst_goa <-lm(mmm_goa$perc~mmm_goa$nptz_lat_sst)
+lm2_sst_goa <- lmodel2(perc~nptz_lat_sst,data=mmm_goa,"relative","relative",100)
 
 col <- cet_pal(12,'c2s')
+
+m1 <- data.frame(matrix(NA, nrow = 2, ncol = 2))
+colnames(m1) <- c('x','y')
+m1$x <- c(min(mmm$nptz_lat_sst),max(mmm$nptz_lat_sst))
+m1$y <- lm2_sst$regression.results$Slope[4]*m1x + lm2_sst$regression.results$Intercept[4]
 pd <- ggplot(mmm, aes(x=nptz_lat_sst,y=perc)) + geom_point(aes(fill = as.factor(mmm$month)), shape = 21, color = "black") +
   scale_fill_manual(labels = c("Jan", "Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),
                     values = col) +
   geom_smooth(method=lm , color="black", se=TRUE) +
-  annotate("text", x = 41, y = 90, label = paste('R^2 ==',round(summary(lm_sst)$r.squared, 2)), size=4, parse = TRUE, hjust = 0) +
-  annotate("text", x = 41, y = 82, label = 'p < 0.0001', size=4, hjust = 0) +
+  annotate("text", x = 29.5, y = 95, label = 'p < 0.01', size=4, hjust = 0, fontface = 'italic') +
+  annotate("text", x = 29.5, y = 100, label = 'CA Current', size=4, hjust =0, fontface = 'bold') + 
   xlab("North Pacific Transition Zone\nmonthly mean latitude (°N)") +
   ylab("Days with foraging\nsperm whale present (%)") +
+  ylim(c(0,100)) +
+  xlim(c(29.5,45)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-         text = element_text(size = 12)) +
-  guides(fill=guide_legend(ncol=2,title="Month")) 
+         text = element_text(size = 12), legend.position = "none")
 
-pe <- ggplot(mq, aes(x=nptz,y=perc)) + geom_point(aes(fill = as.factor(mq$qt)), shape = 21, color = "black") +
-  geom_smooth(method=lm , color="black", se=TRUE) +
-  annotate("text", x = 41, y = 90, label = paste('R^2 ==',round(summary(lm_sst_qt)$r.squared, 2)), size=4, parse = TRUE, hjust = 0) +
-  annotate("text", x = 41, y = 82, label = 'p < 0.01', size=4, hjust = 0) +
-  xlab("North Pacific Transition Zone\nmonthly mean latitude (°N)") +
-  ylab("Days with foraging\nsperm whale present (%)") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        text = element_text(size = 12)) +
-  guides(fill=guide_legend(ncol=2,title="Quarter")) 
-
-
-tiff("outputs/figures/NPTZ_month_160.tiff",units="in", width=6,height=3.5,res=300)
-pd
-dev.off()
-
-
-## 130 - 140
-nptz_sst <- read.csv("data/NPTZ_monthly_sst_narrow.csv")
-
-tiff("outputs/figures/NPTZ_quart_160.tiff",units="in", width=6,height=3.5,res=300)
-pe
-dev.off()
-
-# MONTHLY
-colnames(nptz_sst) <- c("year","month","nptz_lat_sst")
-nptz_sst$year <- as.factor(nptz_sst$year)
-mmm <- allmonths %>% full_join(nptz_sst, by = c("year","month"))
-lm_sst <- lm(mmm$perc~mmm$nptz_lat_sst)
-
-# QUARTERLY
-mq <- data.frame(matrix(NA, nrow = 29, ncol = 4))
-colnames(mq) <- c("year","qt","perc","nptz")
-mq$year <- c(2015,rep(2016,4),rep(2017,4),rep(2018,4),rep(2019,4),rep(2020,4),rep(2021,4),rep(2022,4))
-mq$qt <- c(4,rep(c(1,2,3,4),7))
-for (i in 1:length(mq$year)) {
-  x <- allmonths %>% filter(year == mq$year[i] & month < (mq$qt[i]*3)+1 & month > (mq$qt[i]*3)-3)
-  y <- nptz_sst %>% filter(year == mq$year[i] & month < (mq$qt[i]*3)+1 & month > (mq$qt[i]*3)-3)
-  mq$perc[i] <- mean(x$perc)
-  mq$nptz[i] <- mean(y$nptz_lat_sst)
-}
-lm_sst_qt <- lm(mq$perc ~ mq$nptz)
-
-col <- cet_pal(12,'c2s')
-pd <- ggplot(mmm, aes(x=nptz_lat_sst,y=perc)) + geom_point(aes(fill = as.factor(mmm$month)), shape = 21, color = "black") +
+pe <- ggplot(mmm_goa, aes(x=nptz_lat_sst,y=perc)) + geom_point(aes(fill = as.factor(mmm_goa$month)), shape = 21, color = "black") +
   scale_fill_manual(labels = c("Jan", "Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),
                     values = col) +
   geom_smooth(method=lm , color="black", se=TRUE) +
-  annotate("text", x = 41, y = 90, label = paste('R^2 ==',round(summary(lm_sst)$r.squared, 2)), size=4, parse = TRUE, hjust = 0) +
-  annotate("text", x = 41, y = 82, label = 'p < 0.0001', size=4, hjust = 0) +
+  annotate("text", x = 29.5, y = 95, label = 'p < 0.01', size=4, hjust = 0, fontface = 'italic') +
+  annotate("text", x = 29.5, y = 100, label = 'Gulf of Alaska', size=4, hjust =0, fontface = 'bold') + 
   xlab("North Pacific Transition Zone\nmonthly mean latitude (°N)") +
-  ylab("Days with foraging\nsperm whale present (%)") +
+  ylab("") +
+  ylim(c(0,100)) +
+  xlim(c(29.5,45)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         text = element_text(size = 12)) +
   guides(fill=guide_legend(ncol=2,title="Month")) 
 
-pe <- ggplot(mq, aes(x=nptz,y=perc)) + geom_point(aes(fill = as.factor(mq$qt)), shape = 21, color = "black") +
-  geom_smooth(method=lm , color="black", se=TRUE) +
-  annotate("text", x = 41, y = 90, label = paste('R^2 ==',round(summary(lm_sst_qt)$r.squared, 2)), size=4, parse = TRUE, hjust = 0) +
-  annotate("text", x = 41, y = 82, label = 'p < 0.01', size=4, hjust = 0) +
-  xlab("North Pacific Transition Zone\nmonthly mean latitude (°N)") +
-  ylab("Days with foraging\nsperm whale present (%)") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        text = element_text(size = 12)) +
-  guides(fill=guide_legend(ncol=2,title="Quarter")) 
+tiff("outputs/figures/NPTZ_new.tiff",units="in", width=12,height=5,res=300)
+pd + pe
+dev.off()
+
+

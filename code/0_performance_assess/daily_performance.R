@@ -10,11 +10,11 @@
 ## constrains the search by only considering inter-click-intervals typical of 
 ## cachalot clicks (~0.5-2 seconds).
 ##
-## In this script, manual audit results for 26 days (24 randomly-selected [1 from 
-## each month of 2016 and 2020]; 2 from known dates of sperm whale presence in 
-## Nov-Dec 2022) are compared to automated results. Manual audits were conducted 
-## by WKO in Raven Pro v1.6.3 w/ brightness 30, contrast 65, FFT window size 256 
-## (95% overlap), and listening at max volume in Raven.
+## In this script, manual audit results for 50 days (48 randomly-selected [1 
+## from each month of 2016, 2018, 2020 & 2022]; 2 from known dates of sperm 
+## whale presence in Nov-Dec 2022) are compared to automated results. Manual 
+## audits were conducted by WKO in Raven Pro v1.6.3 w/ brightness 30, contrast 
+## 65, FFT window size 256 (95% overlap), and listening at max volume in Raven.
 ##
 ## This script generates false positive and false negative rates at daily 
 ## resolution. Different BLEDs and "r" values (number of detection repeats at 
@@ -30,19 +30,23 @@ rm(list=ls())
 
 ## manual audit files
 man_2016 <- read.csv("data/manual_validation/2016_test/manual_audit_daily.csv")
+man_2018 <- read.csv("data/manual_validation/2018_test/manual_audit_daily.csv")
 man_2020 <- read.csv("data/manual_validation/2020_test/manual_audit_daily.csv")
-man_2022 <- read.csv("data/manual_validation/2022_sighting/manual_audit_daily.csv")
-audit <- rbind(man_2016,man_2020,man_2022)
-audit$month <- seq(1,26)
+man_2022 <- read.csv("data/manual_validation/2022_test/manual_audit_daily.csv")
+man_2022b <- read.csv("data/manual_validation/2022_sighting/manual_audit_daily.csv")
+audit <- rbind(man_2016,man_2018,man_2020,man_2022,man_2022b)
+audit$month <- seq(1,50)
 ## BLED test files
 f2016 <- list.files(path="data/manual_validation/2016_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
+f2018 <- list.files(path="data/manual_validation/2018_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
 f2020 <- list.files(path="data/manual_validation/2020_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
-f2022 <- list.files(path="data/manual_validation/2022_sighting/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
-files <- c(f2016,f2020,f2022)
+f2022 <- list.files(path="data/manual_validation/2022_test/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
+f2022b <- list.files(path="data/manual_validation/2022_sighting/detections/", pattern="*.txt", full.names=TRUE, recursive=FALSE)
+files <- c(f2016,f2018,f2020,f2022,f2022b)
 
 # performance dataframe
-perf <- data.frame(matrix(NA, nrow = 8, ncol = 7))
-colnames(perf) <- c("r","day_accuracy","day_balanced_accuracy","day_precision","day_recall","day_tn_rate","day_fp_rate")
+perf <- data.frame(matrix(NA, nrow = 8, ncol = 11))
+colnames(perf) <- c("r","day_accuracy","day_balanced_accuracy","day_precision","day_recall","day_tn_rate","day_fp_rate","tp_total","tn_total","fp_total","fn_total")
 
 ## set degree of rounding for inter-click-interval calculations
 ro <- 0.25
@@ -109,15 +113,19 @@ for (r in 3:10) {
     }
   }
   
-  ##### store in appropriate data frame ####
+  ##### store in appropriate row of data frame ####
   x <- r - 2
   perf$r[x] <- r
   perf$day_precision[x] <- sum(performance_day$tp)/(sum(performance_day$tp) + sum(performance_day$fp))
   perf$day_recall[x] <- sum(performance_day$tp)/(sum(performance_day$tp) + sum(performance_day$fn))
   perf$day_tn_rate[x] <- sum(performance_day$tn)/(sum(performance_day$tn) + sum(performance_day$fp))
-  perf$day_fp_rate[x] <- 1 - perf$day_tn_rate[x]
+  perf$day_fp_rate[x] <- sum(performance_day$fp)/(sum(performance_day$fp) + sum(performance_day$tn))
   perf$day_accuracy[x] <- (sum(performance_day$tp) + sum(performance_day$tn))/length(performance_day$month)
   perf$day_balanced_accuracy[x] <- (perf$day_recall[x] + perf$day_tn_rate[x])/2
+  perf$tp_total[x] <- sum(performance_day$tp)
+  perf$tn_total[x] <- sum(performance_day$tn)
+  perf$fp_total[x] <- sum(performance_day$fp)
+  perf$fn_total[x] <- sum(performance_day$fn)
 }
 
 ################################################################################
