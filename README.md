@@ -3,7 +3,7 @@
 
 # cachalot_seasonal
 
-Data and code for Oestreich et al.: "Acoustic evidence for seasonal resource-tracking migration by a top predator of the deep sea"
+Data and code for Oestreich et al., 2024, Movement Ecology: "Evidence for seasonal migration by a cryptic top predator of the deep sea"
 
 This project identifies and analyzes cachalot (sperm whale; Physeter macrocephalus) echolocation clicks found in 7+ years of near continuous recording from the Monterey Bay Aquarium Research Institute (MBARI) MARS hydrophone.
 
